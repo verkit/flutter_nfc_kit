@@ -10,6 +10,8 @@
 
 @implementation FlutterNfcKitPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftFlutterNfcKitPlugin registerWithRegistrar:registrar];
+    if (@available (iOS 13.0, *)){
+    [SwiftFlutterNfcKitPlugin registerWithRegistrar:registrar];
+  }
 }
 @end

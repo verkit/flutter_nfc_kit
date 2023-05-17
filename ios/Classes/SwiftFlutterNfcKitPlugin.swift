@@ -1,3 +1,5 @@
+#if canImport(CoreNFC)
+
 import CoreNFC
 import Flutter
 import UIKit
@@ -30,12 +32,28 @@ func dataWithHexString(hex: String) -> Data {
     return data
 }
 
+
 public class SwiftFlutterNfcKitPlugin: NSObject, FlutterPlugin, NFCTagReaderSessionDelegate {
-    var session: NFCTagReaderSession?
+    
+    private var _session: Any?
+    
+    @available(iOS 13.0, *)
+    private var session: NFCTagReaderSession? {
+      get { return _session as? NFCTagReaderSession }
+      set { _session = newValue }
+    }
     var result: FlutterResult?
-    var tag: NFCTag?
+    
+    var _tag: Any?
+    @available(iOS 13.0, *)
+    private var tag: NFCTag? {
+      get { return _tag as? NFCTag }
+      set { _tag = newValue }
+    }
+    
     var multipleTagMessage: String?
 
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_nfc_kit", binaryMessenger: registrar.messenger())
         let instance = SwiftFlutterNfcKitPlugin()
@@ -44,6 +62,10 @@ public class SwiftFlutterNfcKitPlugin: NSObject, FlutterPlugin, NFCTagReaderSess
 
     // from FlutterPlugin
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard #available(iOS 13.0, *) else {
+          result(FlutterError(code: "unavailable", message: "Only available in iOS 13.0 or newer", details: nil))
+          return
+        }
         if call.method == "getNFCAvailability" {
             if NFCReaderSession.readingAvailable {
                 result("available")
@@ -353,9 +375,11 @@ public class SwiftFlutterNfcKitPlugin: NSObject, FlutterPlugin, NFCTagReaderSess
     }
 
     // from NFCTagReaderSessionDelegate
+    @available(iOS 13.0, *)
     public func tagReaderSessionDidBecomeActive(_: NFCTagReaderSession) {}
 
     // from NFCTagReaderSessionDelegate
+    @available(iOS 13.0, *)
     public func tagReaderSession(_: NFCTagReaderSession, didInvalidateWithError error: Error) {
         guard result != nil else { return; }
         
@@ -380,6 +404,7 @@ public class SwiftFlutterNfcKitPlugin: NSObject, FlutterPlugin, NFCTagReaderSess
     }
 
     // from NFCTagReaderSessionDelegate
+    @available(iOS 13.0, *)
     public func tagReaderSession(_ session: NFCTagReaderSession, didDetect tags: [NFCTag]) {
         if tags.count > 1 {
             // Restart polling in 500ms
@@ -499,3 +524,4 @@ public class SwiftFlutterNfcKitPlugin: NSObject, FlutterPlugin, NFCTagReaderSess
         })
     }
 }
+#endif
